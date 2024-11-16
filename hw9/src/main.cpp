@@ -3,37 +3,41 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <ranges>
+#include <algorithm>
+#include <set>
 
 int main() {
-    std::shared_ptr<Student*> student1(new Student("Petrenko", "A1"));
-    std::shared_ptr<Student*> student2(new Student("Ivanenko", "B2"));
-    std::shared_ptr<Student*> student3(new Student("Shevchenko", "A1"));
-    std::shared_ptr<Student*> student4(new Student("Bondarenko", "C3"));
+    auto student1 = std::make_shared<Student>("Petrenko", "A1");
+    auto student2 = std::make_shared<Student>("Ivanenko", "B2");
+    auto student3 = std::make_shared<Student>("Shevchenko", "A1");
+    auto student4 = std::make_shared<Student>("Bondarenko", "C3");
 
-    std::vector<std::shared_ptr<Student*>> students;
-    students.push_back(student1);
-    students.push_back(student2);
-    students.push_back(student3);
-    students.push_back(student4);
+    std::vector<std::shared_ptr<Student>> students{student1, student2, student3, student4};
 
-    std::shared_ptr<Course*> math(new Course("Mathematics"));
-    std::shared_ptr<Course*> physics(new Course("Physics"));
+    auto math = std::make_shared<Course>("Mathematics");
+    auto physics = std::make_shared<Course>("Physics");
 
     math->addStudent(student1);
     math->addStudent(student3);
     physics->addStudent(student2);
     physics->addStudent(student4);
 
-    std::vector<std::shared_ptr<Course*>> courses;
-    courses.push_back(math);
-    courses.push_back(physics);
+    std::vector<std::shared_ptr<Course>> courses{math, physics};
 
     for (const auto& coursePtr : courses) {
-        if (coursePtr && *coursePtr) {
-            (*coursePtr)->printCourseInfo();
-            std::vector<std::string> groups = (*coursePtr)->getGroups();
+        if (coursePtr) {
+            coursePtr->printCourseInfo();
+
+            auto groupList = coursePtr->getStudents()
+                             | std::views::transform([](const auto& studentPtr) {
+                                 return studentPtr->getGroup();
+                             });
+
+            std::set<std::string> uniqueGroups(groupList.begin(), groupList.end());
+
             std::cout << "Groups attending the course: ";
-            for (const auto& group : groups) {
+            for (const auto& group : uniqueGroups) {
                 std::cout << group << " ";
             }
             std::cout << "\n\n";
