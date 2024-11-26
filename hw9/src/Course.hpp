@@ -20,13 +20,12 @@ public:
     }
 
     std::vector<std::string> getGroups() const {
-        std::vector<std::string> groups;
-        for (const auto& studentPtr : students) {
-            if (studentPtr && *studentPtr) {
-                groups.push_back((*studentPtr)->getGroup());
-            }
-        }
-        return groups;
+    auto groupList = students 
+        | std::views::filter([](const auto& studentPtr) { return studentPtr && *studentPtr; })
+        | std::views::transform([](const auto& studentPtr) { return (*studentPtr)->getGroup(); });
+
+    std::set<std::string> uniqueGroups(groupList.begin(), groupList.end());
+    return std::vector<std::string>(uniqueGroups.begin(), uniqueGroups.end());
     }
 
     void printCourseInfo() const {
