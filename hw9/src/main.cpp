@@ -28,16 +28,12 @@ int main() {
     for (const auto& coursePtr : courses) {
         if (coursePtr) {
             coursePtr->printCourseInfo();
-
-            auto groupList = coursePtr->getStudents()
-                             | std::views::transform([](const auto& studentPtr) {
-                                 return studentPtr->getGroup();
-                             });
-
-            std::set<std::string> uniqueGroups(groupList.begin(), groupList.end());
-
+    
+            auto groupList = coursePtr->getGroups();
+            std::ranges::sort(groupList);
+    
             std::cout << "Groups attending the course: ";
-            for (const auto& group : uniqueGroups) {
+            for (const auto& group : groupList) {
                 std::cout << group << " ";
             }
             std::cout << "\n\n";
