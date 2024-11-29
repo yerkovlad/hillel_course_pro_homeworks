@@ -8,7 +8,7 @@ void TaskController::addTask() {
     std::string title = view.getInput("Enter task title: ");
     std::string description = view.getInput("Enter task description: ");
     int priority = view.getIntegerInput("Enter task priority (1-5): ");
-    auto deadline = std::chrono::system_clock::now() + std::chrono::hours(24); // Пример: +1 день
+    auto deadline = std::chrono::system_clock::now() + std::chrono::hours(24);
 
     model.addTask(Task(title, description, priority, deadline));
     std::cout << "Task added successfully!\n";
