@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <functional>
 
 template<typename T>
 class MySharedPtr {
@@ -31,6 +32,35 @@ public:
         return *this;
     }
 
+    MySharedPtr(MySharedPtr<T>&& other) noexcept
+        : myData(other.myData), myCounter(other.myCounter) {
+        other.myData = nullptr;
+        other.myCounter = nullptr;
+        std::cout << "Moved MySharedPtr\n";
+    }
+
+    MySharedPtr<T>& operator=(MySharedPtr<T>&& other) noexcept {
+        if (this != &other) {
+            release();
+            myData = other.myData;
+            myCounter = other.myCounter;
+            other.myData = nullptr;
+            other.myCounter = nullptr;
+            std::cout << "Move-assigned MySharedPtr\n";
+        }
+        return *this;
+    }
+
+    bool operator==(const MySharedPtr<T>& other) const {
+        return myData == other.myData;
+    }
+
+    struct Hasher {
+        size_t operator()(const MySharedPtr<T>& ptr) const {
+            return std::hash<T*>()(ptr.myData);
+        }
+    };
+
     T& operator*() const {
         return *myData;
     }
@@ -40,7 +70,7 @@ public:
     }
 
     size_t use_count() const {
-        return *myCounter;
+        return myCounter ? *myCounter : 0;
     }
 
     ~MySharedPtr() {
