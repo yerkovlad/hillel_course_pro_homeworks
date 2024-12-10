@@ -9,12 +9,16 @@ class Logger {
 public:
     enum class Level { INFO, WARNING, ERROR };
 
-    static Logger& getInstance() {
-        static Logger instance;
+    static Logger* getInstance() {
+        std::lock_guard<std::mutex> lock(mtx);
+        if (instance == nullptr) {
+            instance = new Logger();
+        }
         return instance;
     }
 
     void log(const std::string& message, Level level = Level::INFO) {
+        std::lock_guard<std::mutex> lock(logMutex);
         std::ofstream logFile("log.txt", std::ios::app);
         if (logFile.is_open()) {
             logFile << getLevelString(level) << " - " << getCurrentTime() << " - " << message << std::endl;
@@ -43,4 +47,11 @@ private:
         }
         return "[UNKNOWN]";
     }
+
+    static Logger* instance;
+    static std::mutex mtx;
+    std::mutex logMutex;
 };
+
+Logger* Logger::instance = nullptr;
+std::mutex Logger::mtx;
