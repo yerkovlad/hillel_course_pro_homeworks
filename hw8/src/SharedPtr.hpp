@@ -1,17 +1,19 @@
 #pragma once
 
 #include <iostream>
+#include <atomic>
 #include <functional>
+#include <mutex>
 
 template<typename T>
 class MySharedPtr {
 private:
     T* myData;
-    size_t* myCounter;
+    std::atomic<size_t>* myCounter;
 
 public:
     explicit MySharedPtr(T* value = nullptr)
-        : myData(value), myCounter(new size_t(1)) {
+        : myData(value), myCounter(new std::atomic<size_t>(1)) {
         std::cout << "Created MySharedPtr, count = " << *myCounter << "\n";
     }
 
@@ -70,7 +72,7 @@ public:
     }
 
     size_t use_count() const {
-        return myCounter ? *myCounter : 0;
+        return myCounter ? myCounter->load() : 0;
     }
 
     ~MySharedPtr() {
@@ -80,12 +82,12 @@ public:
 private:
     void release() {
         if (myCounter) {
-            --(*myCounter);
-            std::cout << "Released MySharedPtr, count = " << *myCounter << "\n";
-            if (*myCounter == 0) {
+            if (--(*myCounter) == 0) {
                 delete myData;
                 delete myCounter;
                 std::cout << "Deleted MySharedPtr data\n";
+            } else {
+                std::cout << "Released MySharedPtr, count = " << *myCounter << "\n";
             }
         }
     }
